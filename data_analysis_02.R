@@ -6,8 +6,9 @@
 rm(list = ls())
 
 # list of required packages
-req_packages <- c('readr', 'string', 'purrr', 'vegan','ggrepel', 'viridis', 'tidyr', 'Hmisc', 'dplyr', 'igraph', 'matrixStats', 'ggpubr', 'ggthemes',
-                  'hrbrthemes', 'plyr', 'readxl', 'randomForest', 'Boruta', 'stringr')
+req_packages <- c('readr', 'string', 'purrr', 'vegan','ggrepel', 'viridis', 'tidyr', 'Hmisc', 'dplyr', 
+                  'igraph', 'matrixStats', 'ggpubr', 'ggthemes', 'hrbrthemes', 'plyr', 'readxl', 
+                  'randomForest', 'Boruta', 'stringr')
 
 # function for installing/importing packages
 ipak <- function(pkg){
@@ -32,6 +33,7 @@ count_data_sequins <- data.frame(count_data_sequins)
 count_data_sequins_blank <- count_data_sequins[,grepl("Blank", colnames(count_data_sequins))]
 count_data_sequins <- count_data_sequins[,!grepl("Blank", colnames(count_data_sequins))]
 count_data_sequins <- count_data_sequins[,!grepl("_T", colnames(count_data_sequins))]
+
 # clean species names
 count_data_sequins$organism <- str_replace_all(count_data_sequins$organism, "chromosome", "")
 count_data_sequins$organism <- str_replace_all(count_data_sequins$organism, "genome", "")
@@ -43,9 +45,11 @@ count_data_sequins$organism <- str_replace_all(count_data_sequins$organism, "sub
 count_data_sequins$organism <- str_replace_all(count_data_sequins$organism, "ATCC", "")
 count_data_sequins$organism <- str_replace_all(count_data_sequins$organism, "DSM", "")
 count_data_sequins$organism <- str_replace_all(count_data_sequins$organism, "____", "")
+
 # set species names as row names
 rownames(count_data_sequins) <- count_data_sequins$organism
 count_data_sequins$organism <- NULL
+
 # normalise RPMM values based on artificial spike-ins
 count_data_sequins_t <- data.frame(t(count_data_sequins))
 count_data_sequins_t$total_count <- rowSums(count_data_sequins_t)
@@ -57,11 +61,11 @@ count_data_sequins_norm_00 <- as.data.frame(sapply( count_data_sequins_norm, as.
 count_data_sequins_norm_00[count_data_sequins_norm_00 == 0] <- NA
 rownames(count_data_sequins_norm_00) <- rownames(count_data_sequins_norm)
 count_data_sequins_norm_01 <- data.frame(t(count_data_sequins_norm_00))
+
 # filter species 
 count_data_sequins_norm_02 <- count_data_sequins_norm_01[which(rowMeans(!is.na(count_data_sequins_norm_01)) > 0.1), ]
 count_data_sequins_norm_02[is.na(count_data_sequins_norm_02)] <- 0
 count_data_sequins_norm_03 <- count_data_sequins_norm_02 * 1000 
-# 
 list_rownames <- rownames(count_data_sequins_norm_03)
 count_data_sequins_norm_03$names1 <- unlist(map(str_split(list_rownames, "_"),4))
 count_data_sequins_norm_03$names2 <- unlist(map(str_split(list_rownames, "_"),3))
@@ -83,15 +87,17 @@ count_data_sequins_norm_04 <- round(count_data_sequins_norm_03,5)
 
 # export normalised absolute abundance counts
 write.csv(count_data_sequins_norm_04, file = "count_data_sequins.csv", sep = ";")
+
 # transpose final data table
 count_data_sequins_norm_05 <- data.frame(t(count_data_sequins_norm_04))
 
 ####################################################################################
 # import meta data table
 meta_data_RandomForrest <- read_excel("meta_data_04_RandomForrest.xlsx", 
-                                      col_types = c("text", "text", "text", "text", "text", "text", "numeric", "text", "numeric", "text", "numeric", 
-                                                    "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", 
-                                                    "numeric", "numeric", "numeric", "numeric", "numeric"))
+                                      col_types = c("text", "text", "text", "text", "text", "text", "numeric", 
+                                                    "text", "numeric", "text", "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", 
+                                                    "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
 meta_data_RandomForrest <- data.frame(meta_data_RandomForrest)
 meta_data_RandomForrest_sort <- meta_data_RandomForrest[order(meta_data_RandomForrest$sample_name),]
 
@@ -192,7 +198,7 @@ rf_acc_plot <-
                            expression(italic("Prevotella melaninogenica")), 
                            expression(italic("Staphylococcus aureus")), 
                            expression(italic("Rothia mucilaginosa")), 
-                           "ß-adrenergic sweat rate", 
+                           "ÃŸ-adrenergic sweat rate", 
                            "Total bacterial load", 
                            "Lung clearance index",
                            "Sample type", 
@@ -213,7 +219,7 @@ rf_gini_plot <-
                            expression(italic("Prevotella jejuni")), 
                            "Pielou's evenness index", 
                            expression(italic("Prevotella melaninogenica")), 
-                           "ß-adrenergic sweat rate",
+                           "ÃŸ-adrenergic sweat rate",
                            expression(italic("Rothia mucilaginosa")), 
                            "Sample type",
                            "Lung clearance index",
@@ -263,14 +269,19 @@ count_data_div$sample_type <- unlist(map(str_split(count_data_div$sample_id, "_"
 count_data_div$patient <- unlist(map(str_split(count_data_div$sample_id, "_"),3))
 count_data_div$birth_year <- unlist(map(str_split(count_data_div$sample_id, "_"),4))
 count_data_div$treatment <- unlist(map(str_split(count_data_div$sample_id, "_"),5))
+
 # Extract important features
 count_data_div <- select(count_data_div, c("patient","treatment", "sample_id", "shannon_div", "simpson_div", "bacterial_load", "spec_richness"))
+
 # make column with evenness information
 count_data_div$eveness <- count_data_div$shannon_div / log(count_data_div$spec_richness)
+
 # re-order data table
 count_data_div <- count_data_div[order(count_data_div$patient),]
+
 # remove sputum samples
 count_data_div <- count_data_div[!grepl("SP", count_data_div$sample_id),]
+
 # split data frames based on sampling time point and keep only patients with longitudinal samples
 count_data_div_v1 <- count_data_div[count_data_div$treatment=="V1",]
 count_data_div_v2 <- count_data_div[count_data_div$treatment=="V2",]
@@ -309,6 +320,7 @@ shannon_div_V1_V3 <-
   stat_compare_means(label = "p.signif", paired = TRUE, label.x.npc = "centre", size=3) +  
   theme_bw() + xlab("Time point") + ylab(" ") +
   theme(panel.grid = element_blank()) + ylim(0,3.5)
+
 # Merge both plots
 shannon_div <- ggarrange(shannon_div_V1_V2, shannon_div_V1_V3)
 
@@ -332,6 +344,7 @@ simpson_div_V1_V3 <-
   stat_compare_means(label = "p.signif", paired = TRUE, label.x.npc = "centre", size=3) +  
   theme_bw() + xlab("Time point") + ylab(" ") +
   theme(panel.grid = element_blank()) + ylim(0,1)
+
 # Merge both plots
 simpson_div <- ggarrange(simpson_div_V1_V2, simpson_div_V1_V3)
 
@@ -393,6 +406,7 @@ evenness_V1_V3 <-
   scale_x_discrete("Time point", labels=c("Baseline", "V3")) + ylim(0,1)
 # merge both plots
 bac_evenness <- ggarrange(evenness_V1_V2, evenness_V1_V3)
+
 # Calculate effect sizes and confidence intervals
 df_baseline <- data.frame(value=df_v1_v2_evenness$Baseline, group="Baseline")
 df_v3 <- data.frame(value=df_v1_v2_evenness$V3, group="V3")
@@ -404,8 +418,6 @@ alpha_div_plots <- ggarrange(bac_load, bac_evenness, nrow=1, labels = c("A", "B"
 # merge plots for Supplementary Figure 02
 alpha_div_supp <- ggarrange(shannon_div, simpson_div, nrow=1, labels=c("A", "B"))
 
-
-
 ####################################################################################
 # Estimation of beta diversity
 # Prepare input table and just keep cough swabs
@@ -415,12 +427,15 @@ group_list <- unlist(map(str_split(colnames(count_data_sequins_norm_04_RA), "_")
 count_data_sequins_norm_04_RA_dist <- dist(t(log10(count_data_sequins_norm_04_RA+1)), method = "euclidean")
 # run betadisper
 betaplot <- betadisper(count_data_sequins_norm_04_RA_dist, group_list, type = "centroid", sqrt.dist = TRUE, bias.adjust=TRUE)
+
 # store centroid in data frame
 betaplot_df_centroid <- data.frame(betaplot$centroids)
 betaplot_df_centroid$time_point <- rownames(betaplot_df_centroid)
+
 # store positions of points in multivariate space in data frame
 betaplot_df_points <- data.frame(betaplot$vectors)
 betaplot_df_points$time_point <- unlist(map(str_split(rownames(betaplot_df_points), "_"),5))
+
 # store distances in data frame
 betaplot_df_dist <- data.frame(betaplot$distances)
 betaplot_df_dist$time_point <- unlist(map(str_split(rownames(betaplot_df_dist), "_"),5))
@@ -472,11 +487,11 @@ alpha_beta_plots <- ggarrange(alpha_div_plots, beta_div_test, nrow=2, heights = 
 pdf("Supplementary_Figure_S02.pdf", width = 8, height = 4)
 alpha_div_supp
 dev.off()
+
 # export Figure for main test
 pdf("Figure_04.pdf", width = 9, height = 8)
 alpha_beta_plots
 dev.off()
-
 
 
 ####################################################################################
@@ -544,7 +559,6 @@ write.table(spearman_V1_nodes_sig, file="nodes_V1.csv", sep=";", col.names = TRU
 write.table(spearman_V1_edges_sig_final, file="edges_V1.csv", sep=";", col.names = TRUE, row.names = FALSE)
 
 
-
 # select V2 time point
 count_data_sequins_norm_V2 <- count_data_sequins_norm_04[,grepl("V2",colnames(count_data_sequins_norm_04))]
 V2_mean_abundance <- rowMedians(as.matrix(count_data_sequins_norm_V2))
@@ -599,8 +613,7 @@ spearman_V2_nodes_sig$Genus <- sapply(strsplit(as.character(spearman_V2_nodes_si
 
 mean_list_V2 = c()
 for (items in spearman_V2_nodes_sig$Id){
-  mean_list_V2 = append(mean_list_V2, V2_mean_abundance[items])
-}
+  mean_list_V2 = append(mean_list_V2, V2_mean_abundance[items])}
 spearman_V2_nodes_sig$mean_abundance <- mean_list_V2
 # export node list
 write.table(spearman_V2_nodes_sig, file="nodes_V2.csv", sep=";", col.names = TRUE, row.names = FALSE)
@@ -668,8 +681,6 @@ write.table(spearman_V3_nodes_sig, file="nodes_V3.csv", sep=";", col.names = TRU
 write.table(spearman_V3_edges_sig_final, file="edges_V3.csv", sep=";", col.names = TRUE, row.names = FALSE)
 
 
-
-
 ####################################################################################
 # Import gephi output
 V1_gephi_output <- read_delim("V1_gephi_output.csv", delim = ",", escape_double = FALSE, trim_ws = TRUE)
@@ -677,13 +688,11 @@ V1_gephi_output <- data.frame(V1_gephi_output)
 V1_gephi_output$V <- "V1"
 V1_gephi_output_largestComponent <- V1_gephi_output[V1_gephi_output$modularity_class==3,]
 
-
 V2_gephi_output <- read_delim("V2_gephi_output.csv", delim = ",", escape_double = FALSE, trim_ws = TRUE)
 V2_gephi_output <- data.frame(V2_gephi_output)
 V2_gephi_output$V <- "V2"
 V2_gephi_output$Cluster <- NULL
 V2_gephi_output_largestComponent <- V2_gephi_output[V2_gephi_output$modularity_class==0,]
-
 
 V3_gephi_output <- read_delim("V3_gephi_output.csv", delim = ",", escape_double = FALSE, trim_ws = TRUE)
 V3_gephi_output <- data.frame(V3_gephi_output)
@@ -811,7 +820,6 @@ abundance_plot <-
   theme(panel.grid = element_blank(), legend.position = "right", legend.title = element_blank(), 
         strip.background = element_rect(fill = "white")) 
 
-
 # look into largest component on species level
 largest_component_spec <- data.frame(rbind(V1_gephi_output_largestComponent_spec, 
                                            V2_gephi_output_largestComponent_spec, 
@@ -896,4 +904,3 @@ all_merged_2 <- ggarrange(empty_plots, all_merged, nrow=2)
 pdf("Figure_05.pdf", width = 12, height = 12)
 all_merged_2
 dev.off()
-
