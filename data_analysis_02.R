@@ -1,5 +1,5 @@
 # Author: Marie-Madlen Pust
-# Last updated: 24 February 2022
+# Last updated: 13 September 2022
 # Content: Sequins normalisation, random forest, network construction, network analysis
 
 # empty global environment
